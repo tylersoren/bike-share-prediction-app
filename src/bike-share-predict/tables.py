@@ -6,8 +6,7 @@ weather_file = 'weather.csv'
 transaction_file = 'bike_transactions.csv'
 hourly_ride_file = 'hourly_rides.csv'
 
-data_dir = os.path.join(os.getcwd(), data_subdir)
-
+data_dir = os.path.abspath(os.path.join(os.getcwd(), '../..', data_subdir))
 class BikeData:
 
   def __init__(self):

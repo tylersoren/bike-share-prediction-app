@@ -4,7 +4,7 @@ import logging
 import numpy as np
 
 from bootstrap import startup
-from helper import get_form_values, create_plot
+from helper import get_predict_form_values, create_plot
 
 # Configure Default Logger
 root_logger = logging.getLogger()
