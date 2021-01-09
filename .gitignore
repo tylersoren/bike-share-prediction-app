@@ -23,4 +23,4 @@ data/raw/
 data/prepared/bike_transactions.csv
 
 # Plotted image graphs
-src/bike-share-predict/static/images/plots/*
+static/images/plots/*
