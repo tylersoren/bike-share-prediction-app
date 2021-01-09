@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Bike Share Data</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  </head>
+  <body>
+
+  <h1>Ride Count Prediction</h1>
+  <div class="flex-container">
+    <div class="flex-child chart">
+      <table class="table" id="prediction-table">
+        <thead>
+          <tr>
+            {% for column in columns %}
+              <th>{{ column }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+        {% for value in values %}  
+        <tr>
+          {% for column in columns %}
+            <td>{{ value[column] }}</td>
+          {% endfor %}
+        </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      </div>
+    </div>
+  </body>
+</html>

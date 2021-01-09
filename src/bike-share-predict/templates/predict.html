@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Bike Share Prediction App</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  </head>
+  <body>
+
+  <h1>Ride Count Prediction</h1>
+  <div class="flex-container">
+
+    <div class="flex-child image">
+      <img src="{{ url_for('static', filename=img_loc) }}" alt="Prediction graph" height="500">
+    </div>
+    <div class="flex-child chart">
+      <table class="table" id="prediction-table">
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>Ride Count</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for result in results %}  
+        <tr>
+          <td>{{ result.hour. }}</td>
+          <td>{{ result.count }}</td>
+        </tr>
+        {% endfor %}
+        <tr>
+          <td style="font-weight:bold">Daily Total</td>
+          <td style="font-weight:bold">{{ sum }}</td>
+        </tr>
+        </tbody>
+      </table>
+      </div>
+    </div>
+  </body>
+</html>

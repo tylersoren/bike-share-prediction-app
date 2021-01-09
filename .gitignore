@@ -1,0 +1,26 @@
+# Editor and local environment files
+.vscode/
+.idea/
+envfile
+.venv/
+
+# Python/Flask files
+__pycache__/
+flask_session/
+
+# Testing files
+.pytest_cache/
+/tests/integration/assets/
+/tests/integration/report.html
+geckodriver.log
+
+# Jupyter notebook checkpoints
+.ipynb_checkpoints/
+
+# Data folder
+# dataset is large and probably shouldn't be in git repo
+data/raw/
+data/prepared/bike_transactions.csv
+
+# Plotted image graphs
+src/bike-share-predict/static/images/plots/*

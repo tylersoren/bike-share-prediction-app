@@ -1,0 +1,16 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+
+[packages]
+flask = "*"
+tensorflow = "==2.3.0"
+matplotlib = "==3.2"
+seaborn = "*"
+pandas = "*"
+
+[requires]
+python_version = "3.8"
