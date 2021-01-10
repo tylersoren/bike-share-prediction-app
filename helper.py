@@ -40,13 +40,11 @@ def get_predict_form_values(form):
 
     return values
 
-def create_plot(hours, predictions):
-    results = []
-    for index, hour in enumerate(values['Hour']):
-            results.append(dict(hour=f" {hour} : 00", count=predictions[index]))
+def create_plot(hours, predictions, img_path = './static'):
 
     img_loc = "images/plots/" + str(uuid.uuid4()) + ".png"
-        
+    path = os.path.join(img_path, img_loc)
+
     sns.set_style("whitegrid")
     sns.lineplot(hours,predictions)
     plt.title('Predicted Ride Count per Hour')
@@ -54,7 +52,7 @@ def create_plot(hours, predictions):
     plt.ylabel('Ride Count')
     plt.xticks(np.arange(0, 23, 4))
     print(os.getcwd())
-    plt.savefig(f"C:/repos/bike-share-prediction-app/src/bike-share-predict/static/{ img_loc}", format='png')
+    plt.savefig(path, format='png')
     plt.close()
 
     return img_loc
