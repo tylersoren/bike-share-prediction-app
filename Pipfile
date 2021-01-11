@@ -11,6 +11,8 @@ tensorflow = "*"
 matplotlib = "==3.2"
 seaborn = "*"
 pandas = "*"
+azure-identity = "*"
+azure-storage-blob = "*"
 
 [requires]
 python_version = "3.8"

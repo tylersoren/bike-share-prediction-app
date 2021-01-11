@@ -4,14 +4,14 @@ LABEL maintainer="tsore28@wgu.edu"
 
 USER root
 
-RUN python -m pip install gunicorn
+RUN python -m pip install gunicorn --no-cache-dir
 
 # We copy just the requirements.txt first to leverage Docker cache
 COPY ./requirements.txt /app/requirements.txt
 
 WORKDIR /app
 
-RUN python -m pip install -r requirements.txt
+RUN python -m pip install -r requirements.txt --no-cache-dir
 
 COPY . /app
 

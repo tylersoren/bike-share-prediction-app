@@ -1,10 +1,26 @@
 import pandas as pd
 import numpy as np
-import os, uuid
+import os, uuid, tempfile, shutil
 import matplotlib.pyplot as plt
 import seaborn as sns
 from datetime import datetime
+from flask import url_for
+from azstorage import AzureStorage
 
+temp_dir = base_path = tempfile.gettempdir()
+
+
+# Fetch Environment variables for configuration
+storage_url = os.getenv('AZURE_STORAGE_ACCOUNT_URL')
+if not storage_url:
+  raise ValueError("Need to define AZURE_STORAGE_ACCOUNT_URL")
+
+container_name = os.getenv('AZURE_STORAGE_IMAGE_CONTAINER_NAME')
+if not container_name:
+  raise ValueError("Need to define AZURE_STORAGE_IMAGE_CONTAINER_NAME")
+
+# Configure Azure Storage connection and download data files
+azure_storage = AzureStorage(storage_url, container_name)
 
 def get_predict_form_values(form):
     date = datetime.strptime(form['date'], '%Y-%m-%d')
@@ -40,19 +56,34 @@ def get_predict_form_values(form):
 
     return values
 
-def create_plot(hours, predictions, img_path = './static'):
+def create_plot(hours, predictions, destination_type = 'azure'):
 
-    img_loc = "images/plots/" + str(uuid.uuid4()) + ".png"
-    path = os.path.join(img_path, img_loc)
+    filename = str(uuid.uuid4()) + ".png"
+    temp_path = os.path.join(temp_dir, filename)
 
     sns.set_style("whitegrid")
-    sns.lineplot(hours,predictions)
+    sns.lineplot(x=hours, y=predictions)
     plt.title('Predicted Ride Count per Hour')
     plt.xlabel('Hour')
     plt.ylabel('Ride Count')
     plt.xticks(np.arange(0, 23, 4))
-    print(os.getcwd())
-    plt.savefig(path, format='png')
+    plt.savefig(temp_path, format='png')
     plt.close()
 
-    return img_loc
+    # Upload image to public storage bucket
+    if destination_type == 'azure':
+        azure_storage.upload_blob(temp_path)
+        img_url =  azure_storage.account_url + azure_storage.container_name + '/' + filename
+
+    # Default to local path in static directory
+    else:
+        static_path = 'images/plots/' + filename
+        local_path = os.path.join('./static', static_path)
+        shutil.copyfile(temp_path, local_path)
+        img_url =  url_for('static', static_path)
+    
+    # Cleanup temp file
+    # os.remove(temp_path)
+    return img_url
+
+    

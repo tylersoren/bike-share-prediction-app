@@ -1,10 +1,11 @@
 # Requires Python 3.8
+from azstorage import AzureStorage
 from flask import Flask, request, render_template
 import logging
 import numpy as np
 
-from bootstrap import startup
 from helper import get_predict_form_values, create_plot
+import app_config
 
 # Configure Default Logger
 root_logger = logging.getLogger()
@@ -20,7 +21,7 @@ logger.addHandler(ch)
 
 app = Flask(__name__, instance_relative_config=True)
 
-model, data = startup()
+model, data, data_storage = app_config.startup()
 
 # Main page handling
 @app.route('/', methods=['GET', 'POST'])
@@ -44,13 +45,13 @@ def predict():
             results.append(dict(hour=f" {hour} : 00", count=predictions[index]))
         
         # Graph the results and create image
-        img_loc = create_plot(values['Hour'], predictions)
+        img_url = create_plot(values['Hour'], predictions)
         
         # Render prediction results html page
         return render_template('predict.html',
                                     results = results,
                                     sum = predictions.sum(),
-                                    img_loc= img_loc)
+                                    img_url= img_url)
     
     else:
         return "No data submitted for prediction"

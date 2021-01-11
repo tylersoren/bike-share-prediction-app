@@ -19,8 +19,7 @@ geckodriver.log
 
 # Data folder
 # dataset is large and probably shouldn't be in git repo
-data/raw/
-data/prepared/bike_transactions.csv
+data/
 
 # Plotted image graphs
 static/images/plots/*

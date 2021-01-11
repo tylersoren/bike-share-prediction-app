@@ -8,4 +8,6 @@ class BikeShareModel:
   def predict(self, data):
 
     return self.model.predict(data)
+
+    
   
