@@ -19,8 +19,8 @@ container_name = os.getenv('AZURE_STORAGE_IMAGE_CONTAINER_NAME')
 if not container_name:
   raise ValueError("Need to define AZURE_STORAGE_IMAGE_CONTAINER_NAME")
 
-# Configure Azure Storage connection and download data files
-azure_storage = AzureStorage(storage_url, container_name)
+# Configure Azure Storage connection for image files
+img_storage = AzureStorage(storage_url, container_name)
 
 def get_predict_form_values(form):
     date = datetime.strptime(form['date'], '%Y-%m-%d')
@@ -72,8 +72,8 @@ def create_plot(hours, predictions, destination_type = 'azure'):
 
     # Upload image to public storage bucket
     if destination_type == 'azure':
-        azure_storage.upload_blob(temp_path)
-        img_url =  azure_storage.account_url + azure_storage.container_name + '/' + filename
+        img_storage.upload_blob(temp_path)
+        img_url =  img_storage.account_url + img_storage.container_name + '/' + filename
 
     # Default to local path in static directory
     else:

@@ -24,9 +24,6 @@ RUN chown -R user:bikeshare /app
 # Set all Files to be read only and allow execute
 RUN chmod -R 551 /app/*
 
-# allow write on the plots directory
-RUN chmod u=rwx /app/static/images/plots
-
 # Run as the new user
 USER user
 

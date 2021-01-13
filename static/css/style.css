@@ -5,12 +5,12 @@ table, th, td  {
 }
 
 .heading-image {
-    width: 300px;
+    width: 100px;
     float:left; 
 }
 
 .heading-title {
-  
+  height: 60px
 }
 
 input.danger {
@@ -96,6 +96,17 @@ input::-webkit-calendar-picker-indicator {
     padding: .1em;
     pointer-events:none;
 }
+
+
+.footer {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  text-align: center;
+}
+
+
 
 .flex-container {
   display: flex;
