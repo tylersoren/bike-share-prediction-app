@@ -1,16 +1,32 @@
-table, th, td  {
-  border: 3px solid black;
-  border-collapse: collapse;
-  padding: 5px;
-}
-
 .heading-image {
     width: 100px;
     float:left; 
 }
 
 .heading-title {
-  height: 60px
+  height: 60px;
+}
+
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  margin-bottom: 80px;
+
+}
+
+#footer {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  margin-top: -80px;
+  height: 80px;
+  width: 100%;
+  text-align: center;
+  background-color: #333;
+  color: white;
+}
+
+a:link {
+  color:red;
 }
 
 input.danger {
@@ -22,9 +38,12 @@ input[type=submit] {
   min-width: 10em;
 }
 
-body {
-  font-family: Arial, Helvetica, sans-serif;
+table, th, td  {
+  border: 3px solid black;
+  border-collapse: collapse;
+  padding: 5px;
 }
+
 
 .navbar {
   overflow: hidden;
@@ -87,35 +106,11 @@ body {
   z-index: 2000;
 }
 
-input::-webkit-calendar-picker-indicator {
-  display: none;/* remove default arrow */
-}
-.myarrow:after {
-    content: url(https://i.stack.imgur.com/i9WFO.png);
-    margin-left: -20px; 
-    padding: .1em;
-    pointer-events:none;
-}
-
-
-.footer {
-  position: fixed;
-  left: 0;
-  bottom: 0;
-  width: 100%;
-  text-align: center;
-}
-
-
-
 .flex-container {
   display: flex;
 }
 
-.flex-child {
-  flex: 1;
-}  
-
-.flex-child:first-child {
-  margin-right: 20px;
-} 
+.flex-container > div {
+  margin: 10px;
+  padding: 10px;
+}

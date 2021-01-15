@@ -30,7 +30,42 @@
 </div> 
 
 <div class="body">
-  <h2>Select an option</h2>
+
+  <h1>{{ message }}</h1>
+  <div class="flex-container">
+
+    <div class="flex-child image">
+      <img src="{{ img_url }}" alt="Prediction graph" height="500">
+    </div>
+    <div class="flex-child chart">
+      <table class="table" id="prediction-table">
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>Ride Count</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for result in results %}  
+        <tr>
+          <td>{{ result.hour }}</td>
+          <td>{{ result.count }}</td>
+        </tr>
+        {% endfor %}
+        <tr>
+          <td style="font-weight:bold">Daily Total</td>
+          <td style="font-weight:bold">{{ sum }}</td>
+        </tr>
+        </tbody>
+      </table>
+      </div>
+    </div>
+
+  
+</div>
+<div id="footer">
+  <p>Site developed by Tyler Sorensen</p>
+  Icons made by <a href="https://www.flaticon.com/authors/freepik" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a>
 </div>
 </html>
 

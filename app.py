@@ -4,7 +4,7 @@ from flask import Flask, request, render_template
 import logging
 import numpy as np
 
-from helper import get_predict_form_values, create_plot
+from helper import get_predict_form_values, get_predict_values, create_plot
 import app_config
 
 # Configure Default Logger
@@ -26,38 +26,29 @@ model, data, data_storage = app_config.startup()
 # Main page handling
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    
-    return render_template('main.html'), 200
+    if request.method == 'POST':
+        # Get values from user submitted fields
+        values = get_predict_form_values(request.form)
+        message = f"Estimated Ride counts for {request.form['date']}"
+    else:
+        # Generate values for tomorrow
+        values = get_predict_values()
+        message = "Tomorrow's Estimated Ride counts"
 
+    results, result_sum, img_url = render_prediction(values)
+        
+    # Render prediction results html page
+    return render_template('main.html',
+                                message = message,
+                                results = results,
+                                sum = result_sum,
+                                img_url= img_url), 200
 
 @app.route('/predict', methods=['GET', 'POST'])
 def predict():
-    if request.method == 'GET':
-        return render_template('prediction-select.html')
 
-    # If request is a Post, handle the prediction
-    if request.method == 'POST':
-        
-        # Get values from user submitted fields
-        values = get_predict_form_values(request.form)
+    return render_template('predict.html')
 
-        # run predictions and round to nearest integer and clip any negative numbers to 0
-        predictions = np.rint(model.predict(values).clip(min=0)).astype(int).flatten()
-        results = []
-        for index, hour in enumerate(values['Hour']):
-            results.append(dict(hour=f" {hour} : 00", count=predictions[index]))
-        
-        # Graph the results and create image
-        img_url = create_plot(values['Hour'], predictions)
-        
-        # Render prediction results html page
-        return render_template('predict.html',
-                                    results = results,
-                                    sum = predictions.sum(),
-                                    img_url= img_url)
-    
-    else:
-        return "No data submitted for prediction"
 
 @app.route('/data', methods=['GET', 'POST'])
 def display_data(count = 50, page = 1):
@@ -70,6 +61,19 @@ def display_data(count = 50, page = 1):
     return render_template('data.html',
                                     columns = columns,
                                     values = values)
+
+
+def render_prediction(values):
+        # run predictions and round to nearest integer and clip any negative numbers to 0
+        predictions = np.rint(model.predict(values).clip(min=0)).astype(int).flatten()
+        results = []
+        for index, hour in enumerate(values['Hour']):
+            results.append(dict(hour=f" {hour} : 00", count=predictions[index]))
+        
+        # Graph the results and create image
+        img_url = create_plot(values['Hour'], predictions)
+
+        return results, predictions.sum(), img_url
 
 # Start the application
 if __name__ == '__main__':

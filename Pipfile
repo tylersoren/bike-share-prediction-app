@@ -6,13 +6,14 @@ verify_ssl = true
 [dev-packages]
 
 [packages]
-flask = "*"
-tensorflow = "*"
+flask = "==1.1.2"
+tensorflow = "==2.4.0"
 matplotlib = "==3.2"
-seaborn = "*"
-pandas = "*"
-azure-identity = "*"
-azure-storage-blob = "*"
+seaborn = "==0.11.1"
+pandas = "==1.2.0"
+azure-identity = "==1.5.0"
+azure-storage-blob = "==12.7.0"
+requests = "==2.25.1"
 
 [requires]
 python_version = "3.8"

@@ -28,35 +28,31 @@
       </div>
     </div>
 </div> 
-<div class="body">
-  <h1>Ride Count Prediction</h1>
-  <div class="flex-container">
 
-    <div class="flex-child image">
-      <img src="{{ img_url }}" alt="Prediction graph" height="500">
-    </div>
-    <div class="flex-child chart">
-      <table class="table" id="prediction-table">
-        <thead>
-          <tr>
-            <th>Time</th>
-            <th>Ride Count</th>
-          </tr>
-        </thead>
-        <tbody>
-        {% for result in results %}  
-        <tr>
-          <td>{{ result.hour }}</td>
-          <td>{{ result.count }}</td>
-        </tr>
-        {% endfor %}
-        <tr>
-          <td style="font-weight:bold">Daily Total</td>
-          <td style="font-weight:bold">{{ sum }}</td>
-        </tr>
-        </tbody>
-      </table>
-      </div>
-    </div>
+<div class="body">
+  <h1>Select date for prediction</h1>
+
+  <form action="/"  method="post">
+    <label for="date">Date:</label>
+    <input type="date" id="date" name="date" required><br>
+    <label for="holiday">Holiday</label>
+    <input type="checkbox" id="holiday" name="holiday"><br>
+    <label for="hitemp">Forecasted High Temp (F):</label>
+    <input type="number" id="hitemp" name="hitemp" min="0.0" max="110.0" step="0.1" value="60.0" required><br>
+    <label for="lotemp">Forecasted Low Temp (F):</label>
+    <input type="number" id="lotemp" name="lotemp" min="-20.0" max="80.0" step="0.1" value="40.0" required><br>
+    <label for="wind">Forecasted Wind Speed (mph):</label>
+    <input type="number" id="wind" name="wind" min="0.0" max="50.0" step="0.1" value="0.0"required><br>
+    <label for="precip">Forecasted Precipitation (inches)</label>
+    <input type="number" id="precip" name="precip" min="0.00" max="10.00" step="0.01" value="0.00" required><br>
+    <br><br>
+    <input type="submit" value="Submit">
+  </form>
+
+</div>
+<div id="footer">
+  <p>Site developed by Tyler Sorensen</p>
+  Icons made by <a href="https://www.flaticon.com/authors/freepik" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a>
 </div>
 </html>
+

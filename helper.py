@@ -3,9 +3,14 @@ import numpy as np
 import os, uuid, tempfile, shutil
 import matplotlib.pyplot as plt
 import seaborn as sns
-from datetime import datetime
+import datetime
 from flask import url_for
 from azstorage import AzureStorage
+from weather import Weather
+
+import logging
+
+logger = logging.getLogger('bike-share-predict')
 
 temp_dir = base_path = tempfile.gettempdir()
 
@@ -19,11 +24,19 @@ container_name = os.getenv('AZURE_STORAGE_IMAGE_CONTAINER_NAME')
 if not container_name:
   raise ValueError("Need to define AZURE_STORAGE_IMAGE_CONTAINER_NAME")
 
+weather_api_key = os.getenv('WEATHER_API_KEY')
+if not weather_api_key:
+  raise ValueError("Need to define WEATHER_API_KEY")
+
+
 # Configure Azure Storage connection for image files
 img_storage = AzureStorage(storage_url, container_name)
 
+# Configure weather API connection
+weather = Weather(weather_api_key)
+
 def get_predict_form_values(form):
-    date = datetime.strptime(form['date'], '%Y-%m-%d')
+    date = datetime.datetime.strptime(form['date'], '%Y-%m-%d')
     holiday = form.get('holiday')
     # Check if box was checked and set to 0 or 1
     if holiday is None:
@@ -55,6 +68,38 @@ def get_predict_form_values(form):
     values['PRCP'] = precip
 
     return values
+
+def get_predict_values(day = 1):
+    if  0 > day > 7:
+        logger.error("Day outside range")
+        return error
+    else:
+        # Get forecasted weather values
+        forecast = weather.get_daily_forecast(day)
+        
+        # Get date x days from today (0-7)
+        date = datetime.date.today() + datetime.timedelta(days=day)
+        ######################
+        ## TODO
+        # Add logic for Check if holiday
+        holiday = 0.0
+
+
+        month = date.month
+        day = date.weekday()
+        hours = np.arange(0,24,1)        
+
+        values = pd.DataFrame()
+        values['Hour'] = hours
+        values['TMAX'] = forecast['temp_max']
+        values['TMIN'] = forecast['temp_min']
+        values['Day of week'] = day
+        values['Month'] = month
+        values['Holiday'] = holiday
+        values['AWND'] = forecast['wind_speed']
+        values['PRCP'] = forecast['rain']
+
+        return values
 
 def create_plot(hours, predictions, destination_type = 'azure'):
 
