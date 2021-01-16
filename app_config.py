@@ -6,7 +6,6 @@ from azstorage import AzureStorage
 # Statically set configuration items
 model_path = os.path.abspath(os.path.join(os.getcwd(),'models/bike_share_v1.0' ))
 temp_dir = base_path = tempfile.gettempdir()
-weather_filename = 'weather.csv'
 summary_filename = 'hourly_rides.csv'
 
 # Fetch Environment variables for configuration
@@ -25,16 +24,10 @@ def startup():
 
   # Configure Azure Storage connection and download data files
   azure_storage = AzureStorage(storage_url, container_name)
-  azure_storage.download_blob(source_file=weather_filename, 
-              destination_file=weather_filename, 
-              destination_folder=temp_dir)
   azure_storage.download_blob(source_file=summary_filename, 
               destination_file=summary_filename, 
               destination_folder=temp_dir)
-
-
-  data = BikeData(weather_file=os.path.join(temp_dir, weather_filename),
-                summary_file=os.path.join(temp_dir, summary_filename))
+  data = BikeData(summary_file=os.path.join(temp_dir, summary_filename))
   
   return model, data, azure_storage
 

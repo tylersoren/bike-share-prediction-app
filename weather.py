@@ -40,7 +40,10 @@ class Weather:
       forecast['temp_max'] = round(response['temp']['min'], 1)
       forecast['temp_min'] = round(response['temp']['max'], 1)
       forecast['wind_speed'] = round(response['wind_speed'], 1)
-      forecast['rain'] = self.__mm_to_inch(response['rain'])
+      try:
+        forecast['rain'] = self.__mm_to_inch(response['rain'])
+      except KeyError:
+        forecast['rain'] = 0.0
 
 
       return forecast

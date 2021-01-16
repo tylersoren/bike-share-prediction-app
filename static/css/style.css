@@ -29,6 +29,29 @@ a:link {
   color:red;
 }
 
+.page-selector {
+  margin-left: 20px;
+}
+
+a.pages {
+  margin-left: 20px;
+  margin-right: 20px;
+  text-decoration: none;
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: #910634;
+  color: white;
+}
+
+a.pages:hover {
+  background-color: #ddd;
+  color: black;
+}
+
+.round {
+  border-radius: 50%;
+}
+
 input.danger {
   color: #cc2f2e;
 }
@@ -65,7 +88,8 @@ table, th, td  {
 }
 
 .dropdown .dropbtn {
-  font-size: 16px;  
+  font-size: 16px;
+  font-weight: bold; 
   border: none;
   outline: none;
   color: white;

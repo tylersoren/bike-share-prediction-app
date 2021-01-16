@@ -1,7 +1,13 @@
+from sys import int_info
 import pandas as pd
 import numpy as np
 import os, uuid, tempfile, shutil
+
+import matplotlib
+# Setting matplotlib backend to prevent conflict with Flask
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+
 import seaborn as sns
 import datetime
 from flask import url_for
@@ -35,6 +41,12 @@ img_storage = AzureStorage(storage_url, container_name)
 # Configure weather API connection
 weather = Weather(weather_api_key)
 
+# Specify column order for data model predictions
+prediction_columns = ['Hour', 'TMAX', 'TMIN', 
+            'Day of week', 'Month','Holiday', 
+            'AWND', 'PRCP']
+
+# Generate values for prediction based on submitted form values
 def get_predict_form_values(form):
     date = datetime.datetime.strptime(form['date'], '%Y-%m-%d')
     holiday = form.get('holiday')
@@ -45,17 +57,16 @@ def get_predict_form_values(form):
         if holiday == 'on':
             holiday = float(1)
         else:
-            error_flag = 1
-            error_msg = "Holiday flag selection error"
+            raise ValueError('Holiday selection value incorrect')
 
     lotemp = float(form['lotemp'])
     hitemp = float(form['hitemp'])
     wind = float(form['wind'])
     precip = float(form['precip'])
-
     month = date.month
     day = date.weekday()
     hours = np.arange(0,24,1)        
+
 
     values = pd.DataFrame()
     values['Hour'] = hours
@@ -69,10 +80,12 @@ def get_predict_form_values(form):
 
     return values
 
+# Dynamically generate values to submit for prediction based on a # of days from the current day
+# Can only generate up to a week in advance due to limited forecast availability
 def get_predict_values(day = 1):
     if  0 > day > 7:
         logger.error("Day outside range")
-        return error
+        raise IndexError('Selected day outside range for available weather forecast')
     else:
         # Get forecasted weather values
         forecast = weather.get_daily_forecast(day)
@@ -84,11 +97,9 @@ def get_predict_values(day = 1):
         # Add logic for Check if holiday
         holiday = 0.0
 
-
         month = date.month
         day = date.weekday()
         hours = np.arange(0,24,1)        
-
         values = pd.DataFrame()
         values['Hour'] = hours
         values['TMAX'] = forecast['temp_max']
@@ -98,8 +109,22 @@ def get_predict_values(day = 1):
         values['Holiday'] = holiday
         values['AWND'] = forecast['wind_speed']
         values['PRCP'] = forecast['rain']
-
         return values
+
+
+def get_data_values(form, columns):
+    rides = int(form['Ride count'])
+    wind = float(form['AWND'])
+    precip = float(form['PRCP'])
+    hitemp = float(form['TMAX'])
+    lotemp = float(form['TMIN'])
+    data= [[rides, wind, precip, hitemp, lotemp]]
+    
+    values = pd.DataFrame(
+        data, columns = columns
+    )   
+
+    return values
 
 def create_plot(hours, predictions, destination_type = 'azure'):
 

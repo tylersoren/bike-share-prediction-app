@@ -1,35 +1,8 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Bike Share Prediction App</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-</head>
-<div class="body">
-  <div class=heading-image>
-    <img src="{{ url_for('static', filename='images/bicycle-rider.png') }}" alt="Bikes4Hire Logo"  height="60" width="60">
-  </div>
-  <div class=heading-title>
-    <h1>
-      Ride Count Data and Forecast
-    </h1>  
-  </div>
-  </br>
-</div>
-  
-<div class="navbar" id="navbar">
-    <div class="dropdown">
-      <button class="dropbtn" id="tools">
-        <b>Tools</b>
-        <i class="fa fa-caret-down"></i>
-      </button>
-      <div class="dropdown-content"> 
-        <a href="/data">Data Explorer</a>
-        <a href="/predict">Predictions</a>
-      </div>
-    </div>
-</div> 
+{% extends 'base.html' %}
 
-<div class="body">
+
+{% block content %}
+
   <h1>Select date for prediction</h1>
 
   <form action="/"  method="post">
@@ -49,10 +22,5 @@
     <input type="submit" value="Submit">
   </form>
 
-</div>
-<div id="footer">
-  <p>Site developed by Tyler Sorensen</p>
-  Icons made by <a href="https://www.flaticon.com/authors/freepik" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a>
-</div>
-</html>
+{% endblock %}
 
