@@ -3,16 +3,17 @@
 
 {% block content %}
 
-<h2>Ride Count Data</h2>
+<h1>Ride Count Data</h1>
   <div>
   {% if not edit %}
     <button onclick="window.location.href='/data?edit=true&page={{ page }}';">
       Edit
     </button>
     <div class="page-selector"></div>
-      {% if page > 1 %}
-        <a href="/data?page={{ page - 1 }}" class="pages round">&#8249;</a>
-      {% endif %}
+      
+        <a href="/data?page={{ page - 1 }}" 
+        {% if page <= 1 %} style="visibility: hidden" {% endif %}
+          class="pages round">&#8249;</a>
         {{ page }}
       {% if page < max_page %}  
         <a href="/data?page={{ page + 1 }}" class="pages round">&#8250;</a>
@@ -25,7 +26,7 @@
   {% endif %}
   </div>
   {% for value in values %} 
-  <form action="/update?timestamp={{ value['Timestamp'] }}" method="post" id="{{ value['Timestamp'] }}"></form>
+  <form action="/data?page={{ page }}&timestamp={{ value['Timestamp'] }}" method="post" id="{{ value['Timestamp'] }}"></form>
   {% endfor %}
   <table class="table" id="prediction-table">
     <thead>

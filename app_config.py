@@ -18,7 +18,6 @@ if not container_name:
   raise ValueError("Need to define AZURE_STORAGE_DATA_CONTAINER_NAME")
 
 
-
 def startup():
   model = BikeShareModel(model_path)
 

@@ -9,11 +9,11 @@
 
 body {
   font-family: Arial, Helvetica, sans-serif;
-  margin-bottom: 80px;
+  margin-bottom: 90px;
 
 }
 
-#footer {
+.footer {
   position: fixed;
   left: 0;
   bottom: 0;
@@ -25,12 +25,26 @@ body {
   color: white;
 }
 
-a:link {
-  color:red;
+.footer a:link, .footer a:visited {
+  color:#009e96;
 }
+
+button {
+  background-color: #640021;
+  border: none;
+  color: white;
+  padding: 12px 24px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+}
+
+
 
 .page-selector {
   margin-left: 20px;
+  margin-top: 20px;
 }
 
 a.pages {
@@ -39,7 +53,7 @@ a.pages {
   text-decoration: none;
   display: inline-block;
   padding: 10px 20px;
-  background-color: #910634;
+  background-color: #640021;
   color: white;
 }
 
@@ -65,6 +79,19 @@ table, th, td  {
   border: 3px solid black;
   border-collapse: collapse;
   padding: 5px;
+}
+table {
+  margin-top: 30px;
+}
+
+th {
+  text-align: center;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
+td {
+  text-align: right;
 }
 
 

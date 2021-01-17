@@ -52,7 +52,7 @@ def predict():
 
 
 @app.route('/data', methods=['GET', 'POST'])
-def display_data():
+def data_page():
     # Get page number if supplied
     page = request.args.get('page')
     if page is None:
@@ -66,6 +66,17 @@ def display_data():
                 return redirect(f"/data?page=1")
         except ValueError:
             return redirect(f"/data?page=1")
+
+    # Handle data update from edit        
+    if request.method == 'POST':      
+        timestamp = request.args.get('timestamp')
+
+        updated_values = get_data_values(request.form, data.data_columns)
+
+        data.update_summary(timestamp, updated_values)
+
+        return redirect(f"/data?page={page}")
+
     # check if edit param was set to true
     edit_flag = request.args.get('edit')
     if edit_flag is None:
@@ -87,15 +98,12 @@ def display_data():
                                     page = page,
                                     max_page = data.max_page)
 
-@app.route('/update', methods=['POST'])
-def update_data():
-    timestamp = request.args.get('timestamp')
 
-    updated_values = get_data_values(request.form, data.data_columns)
+@app.route('/visuals', methods=['GET'])
+def visuals():
+    data.get_summary_time(type='week', year=2016, week=)
 
-    data.update_summary(timestamp, updated_values)
-
-    return redirect('/data')
+    return render_template('visual.html')
 
 
 def render_prediction(values):
