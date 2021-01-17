@@ -101,7 +101,7 @@ def data_page():
 
 @app.route('/visuals', methods=['GET'])
 def visuals():
-    data.get_summary_time(type='week', year=2016, week=)
+    data.get_summary_time(type='week', year=2016, week=12)
 
     return render_template('visual.html')
 

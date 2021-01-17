@@ -31,6 +31,10 @@ class BikeData:
       end = count*page
       return self.summary_df[self.display_columns].loc[start:end]
 
+  def get_summary_time(self, type, year, week):
+      # placeholder
+      return 1
+
   def update_summary(self, timestamp, updated_values):
       self.summary_df.loc[self.summary_df['Timestamp'] == timestamp, self.data_columns] = updated_values.values
 
