@@ -1,11 +1,13 @@
 # Requires Python 3.8
 from shutil import Error
+
+import requests
 from azstorage import AzureStorage
 from flask import Flask, request, render_template, redirect
 import logging
 import numpy as np
 
-from helper import get_predict_form_values, get_predict_values, get_data_values, create_plot
+from helper import get_predict_form_values, get_predict_values, get_data_values, create_prediction_plot, create_data_plot
 import app_config
 
 # Configure Default Logger
@@ -101,9 +103,12 @@ def data_page():
 
 @app.route('/visuals', methods=['GET'])
 def visuals():
-    data.get_summary_time(type='week', year=2016, week=12)
 
-    return render_template('visual.html')
+    selected, img_url = create_data_plot(data, request)
+
+    return render_template('visual.html',
+                    img_url = img_url,
+                    selected = selected)
 
 
 def render_prediction(values):
@@ -114,7 +119,7 @@ def render_prediction(values):
             results.append(dict(hour=f" {hour} : 00", count=predictions[index]))
         
         # Graph the results and create image
-        img_url = create_plot(values['Hour'], predictions)
+        img_url = create_prediction_plot(values['Hour'], predictions)
 
         return results, predictions.sum(), img_url
 

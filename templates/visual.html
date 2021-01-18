@@ -4,7 +4,31 @@
 {% block content %}
 
 <h1>Data Visualization</h1>
+<div>
+  <button {% if  selected ==  'week' %} class="selected" {% endif %}
+    onclick="window.location.href='/visuals?type=week';">
+    Past Week
+  </button>
+  <button {% if  selected ==  'year' %} class="selected" {% endif %}
+    onclick="window.location.href='/visuals?type=year';">
+    Past Year
+  </button>
+  <button {% if  selected ==  'temp' %} class="selected" {% endif %}
+    onclick="window.location.href='/visuals?type=temp';">
+    By Temperature
+  </button>
+  <button {% if  selected ==  'wind' %} class="selected" {% endif %}
+    onclick="window.location.href='/visuals?type=wind';">
+    By Wind Speed
+  </button>
 
+</div>
+<div class="flex-container">
+
+  <div class="flex-child image">
+    <img src="{{ img_url }}" alt="Plotted data" height="500">
+  </div>
+</div>
 
 
 

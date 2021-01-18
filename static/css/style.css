@@ -40,7 +40,13 @@ button {
   font-size: 16px;
 }
 
+button:hover {
+  background-color:#a01c39
+}
 
+button.selected {
+  background-color:#a01c39
+}
 
 .page-selector {
   margin-left: 20px;

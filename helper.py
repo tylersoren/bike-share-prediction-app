@@ -1,4 +1,5 @@
-from sys import int_info
+from seaborn.categorical import barplot
+from tables import BikeData
 import pandas as pd
 import numpy as np
 import os, uuid, tempfile, shutil
@@ -7,6 +8,7 @@ import matplotlib
 # Setting matplotlib backend to prevent conflict with Flask
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
 
 import seaborn as sns
 import datetime
@@ -42,9 +44,9 @@ img_storage = AzureStorage(storage_url, container_name)
 weather = Weather(weather_api_key)
 
 # Specify column order for data model predictions
-prediction_columns = ['Hour', 'TMAX', 'TMIN', 
+prediction_columns = ['Hour', 'Hi temp', 'Lo temp', 
             'Day of week', 'Month','Holiday', 
-            'AWND', 'PRCP']
+            'Wind', 'Rain']
 
 # Generate values for prediction based on submitted form values
 def get_predict_form_values(form):
@@ -70,13 +72,13 @@ def get_predict_form_values(form):
 
     values = pd.DataFrame()
     values['Hour'] = hours
-    values['TMAX'] = hitemp
-    values['TMIN'] = lotemp
+    values['Hi temp'] = hitemp
+    values['Lo temp'] = lotemp
     values['Day of week'] = day
     values['Month'] = month
     values['Holiday'] = holiday
-    values['AWND'] = wind
-    values['PRCP'] = precip
+    values['Wind'] = wind
+    values['Rain'] = precip
 
     return values
 
@@ -102,22 +104,22 @@ def get_predict_values(day = 1):
         hours = np.arange(0,24,1)        
         values = pd.DataFrame()
         values['Hour'] = hours
-        values['TMAX'] = forecast['temp_max']
-        values['TMIN'] = forecast['temp_min']
+        values['Hi temp'] = forecast['temp_max']
+        values['Lo temp'] = forecast['temp_min']
         values['Day of week'] = day
         values['Month'] = month
         values['Holiday'] = holiday
-        values['AWND'] = forecast['wind_speed']
-        values['PRCP'] = forecast['rain']
+        values['Wind'] = forecast['wind_speed']
+        values['Rain'] = forecast['rain']
         return values
 
 
 def get_data_values(form, columns):
     rides = int(form['Ride count'])
-    wind = float(form['AWND'])
-    precip = float(form['PRCP'])
-    hitemp = float(form['TMAX'])
-    lotemp = float(form['TMIN'])
+    wind = float(form['Wind'])
+    precip = float(form['Rain'])
+    hitemp = float(form['Hi temp'])
+    lotemp = float(form['Lo temp'])
     data= [[rides, wind, precip, hitemp, lotemp]]
     
     values = pd.DataFrame(
@@ -126,17 +128,82 @@ def get_data_values(form, columns):
 
     return values
 
-def create_plot(hours, predictions, destination_type = 'azure'):
+def create_prediction_plot(hours, predictions, destination_type = 'azure'):
+
+    title = 'Predicted Ride Count per Hour'
+    xlabel = 'Hour'
+    ylabel = 'Ride Count'
+    xticks = np.arange(0, 23, 4)
+
+    return create_plot(hours, predictions, title, xlabel, ylabel, xticks, destination_type)
+
+def create_data_plot(data: BikeData, request, destination_type = 'azure'):
+    data_type = request.args.get('type')
+    if data_type is None or data_type not in ['year', 'week', 'temp', 'wind']:
+        data_type = 'week'
+
+    plot_type = "line"
+    data_type = data_type.lower()
+    if data_type in ['year', 'week']:
+        plot_data = data.get_summary_time(data_type)
+        x = plot_data['Timestamp']
+        y = plot_data['Ride count']
+        if data_type == 'year':
+            title = 'Ride Count per Day for Past Year'
+            xlabel = 'Date'
+            ylabel = 'Ride Count'
+            xticks = np.arange(plot_data['Timestamp'].min(), plot_data['Timestamp'].max(),datetime.timedelta(days=30))
+        else:
+            title = 'Ride Count per Hour for Past Week'
+            xlabel = 'Date'
+            ylabel = 'Ride Count'
+            xticks = np.arange(plot_data['Timestamp'].min(), plot_data['Timestamp'].max(),datetime.timedelta(hours=6))
+    else:
+        plot_data = data.get_summary_weather(data_type)
+        if data_type == 'temp':
+            x = plot_data['Average temp']
+            y = plot_data['Ride count']
+            title = 'Average Hourly Ride Count by Daily Average Temp'
+            xlabel = 'Temp (F)'
+            ylabel = 'Hourly Ride Count'
+            xticks = np.arange(plot_data['Average temp'].min(), plot_data['Average temp'].max(), 3.0)
+
+        else:
+            x = plot_data['Wind']
+            y = plot_data['Ride count']
+            title = 'Average Hourly Ride Count by Daily Average Wind Speed'
+            xlabel = 'Wind Speed (MPH)'
+            ylabel = 'Hourly Ride Count'
+            xticks = np.arange(round(plot_data['Wind'].min()), round(plot_data['Wind'].max())+1, 2.0)
+
+    return data_type, create_plot(x, y, title, xlabel, ylabel, xticks, plot_type, destination_type)
+
+def create_plot(x, y, title, xlabel, ylabel, xticks, plot_type = 'line', destination_type = 'azure'):
 
     filename = str(uuid.uuid4()) + ".png"
     temp_path = os.path.join(temp_dir, filename)
 
+    fig, ax = plt.subplots(figsize = ( 8 , 5 )) 
     sns.set_style("whitegrid")
-    sns.lineplot(x=hours, y=predictions)
-    plt.title('Predicted Ride Count per Hour')
-    plt.xlabel('Hour')
-    plt.ylabel('Ride Count')
-    plt.xticks(np.arange(0, 23, 4))
+    if plot_type == 'bar':
+       sns.barplot(x, y)
+    else:
+       sns.lineplot(x, y)
+
+    plt.title(title)
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    plt.xlim(min(x), max(x))
+
+    if xlabel == 'Date':
+        locator = mdates.AutoDateLocator(minticks=4, maxticks=14)
+        ax.xaxis.set_major_locator(locator)
+        ax.xaxis.set_major_formatter(mdates.ConciseDateFormatter(locator))
+        plt.xticks(rotation=60)
+    else:
+        plt.xticks(xticks)
+        plt.xticks(rotation=45)
+    
     plt.savefig(temp_path, format='png')
     plt.close()
 
@@ -153,7 +220,5 @@ def create_plot(hours, predictions, destination_type = 'azure'):
         img_url =  url_for('static', static_path)
     
     # Cleanup temp file
-    # os.remove(temp_path)
+    os.remove(temp_path)
     return img_url
-
-    
