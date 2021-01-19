@@ -93,7 +93,7 @@ class AzureStorage:
         # Check if file was included in the Post, if not return warning
         filename = secure_filename(source_file)
         if not filename:
-            return Response(message="Must select a file to upload first!",status_code=400)
+            return Response(message="Must select a file to download first!",status_code=400)
 
         if source_folder == '':
             target_blob = filename 
@@ -129,38 +129,18 @@ class AzureStorage:
         return Response(message="Downloaded File Successfully",status_code=200)
 
     # Delete specified blob
-    def delete_blob(self, user_session: UserStorageSession, blob_name):
+    def delete_blob(self, blob_name):
         if blob_name is None:
-            logger.warning(user_session.user + " sent delete request without specified blob name")
+            logger.warning("Sent delete request without specified blob name")
             return Response(message="No file specified for deletion",status_code=400)
         else:
-            delete_count = 0
-            for blob in user_session.blob_table:
-                if blob['name'] == blob_name and blob['uploaded_by'] == user_session.user:
-                    delete_count += 1
-                    blob_client = self.blob_service_client.get_blob_client(container=self.container_name,
-                                                                           blob=blob_name)
-                    logger.info(user_session.user + " deleting blob: " + blob_name)
-                    blob_client.delete_blob(delete_snapshots=False)
-                    user_session.blob_table.remove(blob)
-
-            if delete_count < 1:
-                logger.warning(user_session.user + " sent delete request for: " + blob_name + " but blob was not found")
+            try:
+                blob_client = self.blob_service_client.get_blob_client(container=self.container_name,
+                                                                        blob=blob_name)
+                logger.info(f"Deleting blob: {blob_name}")
+                blob_client.delete_blob(delete_snapshots=False)
+            except ResourceNotFoundError:
+                logger.warning(f"Sent delete request for: { blob_name } but blob was not found")
                 return Response(message="File to delete was not found in the specified location",status_code=400)
 
         return Response(message="File deleted successfully",status_code=200)
-
-
-# function to get unique values
-def unique(list1):
-    # insert the list to the set 
-    list_set = set(list1)
-    # convert the set to the list and return
-    return (list(list_set))
-
-
-# Remove prefix from string
-def remove_prefix(text, prefix):
-    if text.startswith(prefix):
-        return text[len(prefix):]
-    return text

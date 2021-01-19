@@ -12,7 +12,6 @@ class Weather:
       # Set URL to onecall API that can return different weather sets
       self.api_url = "https://api.openweathermap.org/data/2.5/onecall"
       
-      # Set location to Washington Dulles Internation airport
       self.latitude = lat
       self.longitude = lon
 

@@ -5,7 +5,7 @@ from azstorage import AzureStorage
 
 # Statically set configuration items
 model_path = os.path.abspath(os.path.join(os.getcwd(),'models/bike_share_v1.0' ))
-temp_dir = base_path = tempfile.gettempdir()
+temp_dir = tempfile.gettempdir()
 summary_filename = 'hourly_rides.csv'
 
 # Fetch Environment variables for configuration
