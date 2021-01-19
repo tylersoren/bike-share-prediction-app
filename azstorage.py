@@ -8,31 +8,10 @@ import logging
 
 logger = logging.getLogger('bike-share-predict')
 
-class Response:
-
-    # Default response object is success with blank message
-    # error flag 0 = use base.html
-    # error flag 1 = use error.html
-    # error flag 2 = return message only
-    def __init__(self, message="", status_code=200, error_flag=0):
-        self.message=message
-        self.status_code=status_code
-        self.error_flag=error_flag
-
-
-class UserStorageSession:
-
-    def __init__(self, path, user):
-        self.path = path
-        self.user = user
-        self.blob_table = []
-        self.folder_list = []
 
 
 # Class for storing a connection to an Azure storage account and container
-# Provides methods for listing blobs and folders, uploading and deleting blobs
-# All methods return a Response object which contains a message, response code, and a flag 
-# to indicates if the error template page should be used instead of the base template
+# Provides methods for uploading, downloading, and deleting blobs
 class AzureStorage:
 
     def __init__(self, storage_url, container_name):
@@ -68,7 +47,7 @@ class AzureStorage:
                 # Check if blob already exists
                 if blob_client.get_blob_properties()['size'] > 0:
                     logger.warning(f"{target_blob} already exists in the selected path. Skipping upload.")
-                    return Response(message=f"{target_blob} already exists in the selected path",status_code=409,error_flag=2)
+                    return None
             except ResourceNotFoundError as e:
                 # catch exception that indicates that the blob does not exist and we are good to upload file
                 pass
@@ -83,17 +62,19 @@ class AzureStorage:
 
         except Exception as e:
             logger.error(e)
-            return Response(message="Failed to upload file",status_code=400,error_flag=1)
+            return None
 
+        blob_url = self.account_url + self.container_name + '/' + target_blob
 
-        return Response(message="Uploaded File Successfully",status_code=200)
+        return blob_url
         
     # Download blob from Azure Storage
     def download_blob(self, destination_file, source_file, destination_folder = '', source_folder = ''):
         # Check if file was included in the Post, if not return warning
         filename = secure_filename(source_file)
         if not filename:
-            return Response(message="Must select a file to download first!",status_code=400)
+            logger.warning("Must select a file to download first!")
+            return None
 
         if source_folder == '':
             target_blob = filename 
@@ -115,24 +96,22 @@ class AzureStorage:
                     blob_data = blob_client.download_blob()
                     blob_data.readinto(my_blob)
             except ResourceNotFoundError as e:
-                message = f"Download file failed. {target_blob} not found"
-                logger.warning(message)
-                return Response(message=message,status_code=400,error_flag=1)
+                logger.error(f"Download file failed. {target_blob} not found")
+                return None
             
             logger.info(f"Downloaded {target_blob} to {out_file}")
 
         except Exception as e:
             logger.error(e)
-            return Response(message="Failed to download file",status_code=400,error_flag=1)
+            return None
 
 
-        return Response(message="Downloaded File Successfully",status_code=200)
+        return out_file
 
     # Delete specified blob
     def delete_blob(self, blob_name):
         if blob_name is None:
             logger.warning("Sent delete request without specified blob name")
-            return Response(message="No file specified for deletion",status_code=400)
         else:
             try:
                 blob_client = self.blob_service_client.get_blob_client(container=self.container_name,
@@ -141,6 +120,19 @@ class AzureStorage:
                 blob_client.delete_blob(delete_snapshots=False)
             except ResourceNotFoundError:
                 logger.warning(f"Sent delete request for: { blob_name } but blob was not found")
-                return Response(message="File to delete was not found in the specified location",status_code=400)
 
-        return Response(message="File deleted successfully",status_code=200)
+    # Return list of blobs in the container
+    def list_blobs(self):
+        try:
+            blob_list = self.container_client.list_blobs()
+        except Exception:
+            logger.error(f"Failed to list Blobs in container {self.container_name}")
+            return None
+
+        return blob_list
+    
+    # Delete all blobs in the storage container
+    def clear_storage(self):
+        blob_list = self.list_blobs()
+        for blob in blob_list:
+            self.delete_blob(blob['name'])
