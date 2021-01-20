@@ -16,34 +16,35 @@ import seaborn as sns
 import datetime
 from flask import url_for
 
-
 import logging
 
 logger = logging.getLogger('bike-share-predict')
 
 
-
-class BikeShareApi:
-
-    def __init__(self, data_file, model_path, weather_api_key, img_url, img_container_name):
-        logger.info('Initializing the BikeShare data. Purging old graph images...')
-        # Configure Azure Storage connection for image files
-        self.img_storage = AzureStorage(img_url, img_container_name)
-        self.img_storage.clear_storage()
-
+class BikeShareApi():
+       
+    # Initialize API
+    def __init__(self, data_file, model_path, weather_api_key, img_url=None, img_container_name=None):
         # Configure weather API connection
         self.weather = Weather(weather_api_key)
 
-        # Specify column order for data model predictions
-        self.prediction_columns = ['Hour', 'Hi temp', 'Lo temp', 
-                    'Day of week', 'Month','Holiday', 
-                    'Wind', 'Rain']
-        
         # Create ML data model object for predictions
         self.model = BikeShareModel(model_path)
 
         # Create historical data object
         self.data = BikeData(summary_file=data_file)
+
+        # If no Azure storage information provided default to local storage
+        if img_url is None:
+            self.storage_type = 'local'
+        # Else configure Azure storage
+        else:
+            self.storage_type = 'azure'
+            logger.info('Initializing the BikeShare data. Purging old graph images from Azure Storage...')
+            # Configure Azure Storage connection for image files
+            self.img_storage = AzureStorage(img_url, img_container_name)
+            self.img_storage.clear_storage()
+
 
     # Generate values for prediction based on submitted form values
     def get_predict_form_values(self, form):
@@ -211,15 +212,19 @@ class BikeShareApi:
         plt.close()
 
         # Upload image to public storage bucket
-        if destination_type == 'azure':
+        if self.storage_type == 'azure':
             img_url = self.img_storage.upload_blob(temp_path)
 
         # Default to local path in static directory
         else:
             static_path = 'images/plots/' + filename
-            local_path = os.path.join('./static', static_path)
+            local_path = os.path.normpath(os.path.join(os.getcwd(), 'static', static_path))
+            # Ensure the directory exists
+            os.makedirs(os.path.dirname(local_path), exist_ok=True)
+            # Copy the temp file to the static images folder
             shutil.copyfile(temp_path, local_path)
-            img_url =  url_for('static', static_path)
+            # Generate flask url for the image
+            img_url =  url_for('static', filename=static_path)
         
         # Cleanup temp file
         os.remove(temp_path)
