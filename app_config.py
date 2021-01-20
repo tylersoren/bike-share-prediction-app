@@ -6,7 +6,7 @@ import logging
 logger = logging.getLogger('bike-share-predict')
 
 # Statically set configuration items
-model_path = os.path.abspath(os.path.join(os.getcwd(),'models/bike_share_v1.0' ))
+model_path = os.path.abspath(os.path.join(os.getcwd(),'models/bike_share' ))
 temp_dir = tempfile.gettempdir()
 data_filename = 'hourly_rides.csv'
 

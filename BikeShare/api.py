@@ -190,9 +190,9 @@ class BikeShareApi():
         fig, ax = plt.subplots(figsize = ( 8 , 5 )) 
         sns.set_style("whitegrid")
         if plot_type == 'bar':
-            sns.barplot(x, y)
+            sns.barplot(x=x, y=y)
         else:
-            sns.lineplot(x, y)
+            sns.lineplot(x=x, y=y)
 
         plt.title(title)
         plt.xlabel(xlabel)

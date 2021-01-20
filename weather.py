@@ -1,3 +1,7 @@
+# Weather class for retrieving weather forecast information from OpenWeather API
+# https://openweathermap.org/api/one-call-api
+# Created by Tyler Sorensen
+
 import requests
 import logging
 
