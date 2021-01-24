@@ -1,5 +1,4 @@
-import os, tempfile
-from azstorage import AzureStorage
+import os
 from BikeShare.api import BikeShareApi
 import logging
 
@@ -7,7 +6,6 @@ logger = logging.getLogger('bike-share-predict')
 
 # Statically set configuration items
 model_path = os.path.abspath(os.path.join(os.getcwd(),'models/bike_share' ))
-temp_dir = tempfile.gettempdir()
 data_filename = 'hourly_rides.csv'
 
 
@@ -26,7 +24,8 @@ def initialize():
         api = BikeShareApi(data_file=data_file,
               model_path=model_path,
               weather_api_key=weather_api_key)
-    # Configure API with Azure Storage
+
+    # Get config parameters for Azure Storage
     else:
         data_container_name = os.getenv('AZURE_STORAGE_DATA_CONTAINER_NAME')
         if not data_container_name:
@@ -35,18 +34,12 @@ def initialize():
         img_container_name = os.getenv('AZURE_STORAGE_IMAGE_CONTAINER_NAME')
         if not img_container_name:
             raise ValueError("Need to define AZURE_STORAGE_IMAGE_CONTAINER_NAME")
-        
-        # Configure Azure Storage connection and download data file
-        azure_storage = AzureStorage(storage_url, data_container_name)
-        azure_storage.download_blob(source_file=data_filename, 
-                    destination_file=data_filename, 
-                    destination_folder=temp_dir)
-        data_file = os.path.join(temp_dir, data_filename)
 
-        api = BikeShareApi(data_file=data_file,
+        api = BikeShareApi(data_file=data_filename,
               model_path=model_path,
               weather_api_key=weather_api_key, 
-              img_url=storage_url, 
+              storage_url=storage_url, 
+              data_container_name=data_container_name,
               img_container_name=img_container_name
               )
     

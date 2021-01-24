@@ -14,42 +14,51 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 
 import seaborn as sns
-import datetime
+import datetime as dt
 from flask import url_for
 
 import logging
 
 logger = logging.getLogger('bike-share-predict')
 
+temp_dir = tempfile.gettempdir()
 
 class BikeShareApi():
        
     # Initialize API
-    def __init__(self, data_file, model_path, weather_api_key, img_url=None, img_container_name=None):
+    def __init__(self, data_file, model_path, weather_api_key, 
+            storage_url=None, data_container_name=None, img_container_name=None):
         # Configure weather API connection
         self.weather = Weather(weather_api_key)
 
         # Create ML data model object for predictions
         self.model = BikeShareModel(model_path)
 
-        # Create historical data object
-        self.data = BikeData(summary_file=data_file)
-
         # If no Azure storage information provided default to local storage
-        if img_url is None:
+        if storage_url is None:
             self.storage_type = 'local'
         # Else configure Azure storage
         else:
             self.storage_type = 'azure'
             logger.info('Initializing the BikeShare data. Purging old graph images from Azure Storage...')
             # Configure Azure Storage connection for image files
-            self.img_storage = AzureStorage(img_url, img_container_name)
+            self.img_storage = AzureStorage(storage_url, img_container_name)
+            # Purge all old messages
             self.img_storage.clear_storage()
-
+            
+            # Configure Azure Storage connection and download data file
+            self.data_storage = AzureStorage(storage_url, data_container_name)
+            self.data_storage.download_blob(source_file=data_file, 
+                        destination_file=data_file, 
+                        destination_folder=temp_dir)
+            data_file = os.path.join(temp_dir, data_file)
+        
+        # Create historical data object
+        self.data = BikeData(summary_file=data_file)
 
     # Generate values for prediction based on submitted form values
     def get_predict_form_values(self, form):
-        date = (datetime.datetime.strptime(form['date'], '%Y-%m-%d')).date()
+        date = (dt.datetime.strptime(form['date'], '%Y-%m-%d')).date()
         
         # check if date is a holiday
         holiday = float(is_holiday(date))
@@ -87,7 +96,7 @@ class BikeShareApi():
             forecast = self.weather.get_daily_forecast(day)
             
             # Get date x days from today (0-7)
-            date = datetime.date.today() + datetime.timedelta(days=day)
+            date = dt.date.today() + dt.timedelta(days=day)
             
             # check if date is a holiday
             holiday = float(is_holiday(date))
@@ -119,6 +128,22 @@ class BikeShareApi():
         )   
 
         self.data.update(timestamp, updated_values)
+    
+    def save_data_values(self):
+        # Export data to temp csv and save to proper location
+        time_format='%Y-%m-%dT%H.%M.%S'
+        timestamp = dt.datetime.now().strftime(time_format)
+        temp_file = f"updated-ride-data-{timestamp}.csv"
+        temp_path = os.path.join(temp_dir, temp_file)
+        self.data.to_csv(temp_path)
+        if self.storage_type == 'azure':
+            file_loc = self.data_storage.upload_blob(temp_path)
+            # Cleanup temp file
+            os.remove(temp_path)
+        else:
+            file_loc = temp_path 
+
+        return file_loc
 
     def get_data(self, page):
         return self.data.get(page)
@@ -180,7 +205,7 @@ class BikeShareApi():
     def __create_plot(self, x, y, title, xlabel, ylabel, xticks, plot_type = 'line', destination_type = 'azure'):
 
         filename = str(uuid.uuid4()) + ".png"
-        temp_path = os.path.join(tempfile.gettempdir(), filename)
+        temp_path = os.path.join(temp_dir, filename)
 
         fig, ax = plt.subplots(figsize = ( 8 , 5 )) 
         sns.set_style("whitegrid")

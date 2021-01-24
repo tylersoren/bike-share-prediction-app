@@ -57,4 +57,7 @@ class BikeData:
 
   def update(self, timestamp, updated_values):
       self.data_df.loc[self.data_df['Timestamp'] == timestamp, self.data_columns] = updated_values.values
+    
+  def to_csv(self, path):
+    self.data_df.to_csv(path)
 

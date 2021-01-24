@@ -66,8 +66,14 @@ def data_page():
         except ValueError:
             return redirect(f"/data?page=1")
 
+    # set default message to null
+    message = ''
+    if request.args.get('save'):
+        url = service.save_data_values()
+        message = f"Data saved to {url}"
+
     # Handle data update from edit        
-    if request.method == 'POST':      
+    if request.method == 'POST':
         timestamp = request.args.get('timestamp')
 
         service.update_data_values(request.form, timestamp)
@@ -93,7 +99,9 @@ def data_page():
                                     values = values,
                                     edit = edit,
                                     page = page,
-                                    max_page = max_page)
+                                    max_page = max_page,
+                                    message = message)
+
 
 
 @app.route('/visuals', methods=['GET'])

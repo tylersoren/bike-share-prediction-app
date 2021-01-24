@@ -4,10 +4,14 @@
 {% block content %}
 
 <h1>Ride Count Data</h1>
+<h2>{{ message }}</h2>
   <div>
   {% if not edit %}
     <button onclick="window.location.href='/data?edit=true&page={{ page }}';">
       Edit
+    </button>
+    <button onclick="window.location.href='/data?save=true&page={{ page }}';">
+      Save
     </button>
     <div class="page-selector"></div>
       
@@ -23,11 +27,11 @@
     <button onclick="window.location.href='/data?page={{ page }}';">
       Cancel
     </button>
+    {% for value in values %} 
+    <form action="/data?page={{ page }}&timestamp={{ value['Timestamp'] }}" method="post" id="{{ value['Timestamp'] }}"></form>
+    {% endfor %}
   {% endif %}
   </div>
-  {% for value in values %} 
-  <form action="/data?page={{ page }}&timestamp={{ value['Timestamp'] }}" method="post" id="{{ value['Timestamp'] }}"></form>
-  {% endfor %}
   <table class="table" id="prediction-table">
     <thead>
       <tr>
