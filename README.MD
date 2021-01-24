@@ -24,7 +24,7 @@ To configure Azure Storage the following variables are required:
 
   * AZURE_STORAGE_ACCOUNT_URL - Azure storage account where the data file and images are stored (e.g. https://bikeshare.blob.core.windows.net/)
   * AZURE_STORAGE_DATA_CONTAINER_NAME - The Azure storage container in the account where the data file is stored. This should be a private container.
-  * AZURE_STORAGE_IMAGE_CONTAINER_NAME - he Azure storage container in the account where the image files will be uploaded. This should be a public blob container.
+  * AZURE_STORAGE_IMAGE_CONTAINER_NAME - The Azure storage container in the account where the image files will be uploaded. This should be a public blob container.
 
 If running the application on a system in Azure with managed identity assigned, the application will automatically use those credentials. If not, you must create and Azure Service Principal and secret and set the following variables to configure authentication:
   

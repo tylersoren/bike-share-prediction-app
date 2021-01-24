@@ -1,5 +1,6 @@
 from BikeShare.data import BikeData
 from BikeShare.predict import BikeShareModel
+from BikeShare.calendar import is_holiday
 from azstorage import AzureStorage
 from weather import Weather
 import pandas as pd
@@ -48,16 +49,11 @@ class BikeShareApi():
 
     # Generate values for prediction based on submitted form values
     def get_predict_form_values(self, form):
-        date = datetime.datetime.strptime(form['date'], '%Y-%m-%d')
-        holiday = form.get('holiday')
-        # Check if box was checked and set to 0 or 1
-        if holiday is None:
-            holiday = float(0)
-        else:
-            if holiday == 'on':
-                holiday = float(1)
-            else:
-                raise ValueError('Holiday selection value incorrect')
+        date = (datetime.datetime.strptime(form['date'], '%Y-%m-%d')).date()
+        
+        # check if date is a holiday
+        holiday = float(is_holiday(date))
+
 
         lotemp = float(form['lotemp'])
         hitemp = float(form['hitemp'])
@@ -92,10 +88,9 @@ class BikeShareApi():
             
             # Get date x days from today (0-7)
             date = datetime.date.today() + datetime.timedelta(days=day)
-            ######################
-            ## TODO
-            # Add logic for Check if holiday
-            holiday = 0.0
+            
+            # check if date is a holiday
+            holiday = float(is_holiday(date))
 
             month = date.month
             day = date.weekday()
