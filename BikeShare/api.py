@@ -68,6 +68,11 @@ class BikeShareApi():
         hitemp = float(form['hitemp'])
         wind = float(form['wind'])
         precip = float(form['precip'])
+        # Set boolean flag for snow
+        if float(form['snow']) > 0:
+            snow = 1
+        else:
+            snow = 0
         month = date.month
         day = date.weekday()
         hours = np.arange(0,24,1)        
@@ -79,9 +84,24 @@ class BikeShareApi():
         values['Lo temp'] = lotemp
         values['Day of week'] = day
         values['Month'] = month
+
+        # Set season one-hot variables
+        seasons = ['Fall','Spring','Summer','Winter']
+        for col in seasons:
+            values[col] = 0
+        if month in [1,2,12]:
+            values['Winter'] = 1
+        elif month in[3,4,5]:
+            values['Spring'] = 1
+        elif month in [6,7,8]:
+            values['Summer'] = 1
+        elif month in[9,10,11]:
+            values['Fall'] = 1
+
         values['Holiday'] = holiday
         values['Wind'] = wind
         values['Rain'] = precip
+        values['Snow'] = snow
 
         return values
 
@@ -110,9 +130,29 @@ class BikeShareApi():
             values['Lo temp'] = forecast['temp_min']
             values['Day of week'] = day
             values['Month'] = month
+            # Set season one-hot variables
+            seasons = ['Fall','Spring','Summer','Winter']
+            for col in seasons:
+                values[col] = 0
+            if month in [1,2,12]:
+                values['Winter'] = 1
+            elif month in[3,4,5]:
+                values['Spring'] = 1
+            elif month in [6,7,8]:
+                values['Summer'] = 1
+            elif month in[9,10,11]:
+                values['Fall'] = 1
+
             values['Holiday'] = holiday
             values['Wind'] = forecast['wind_speed']
             values['Rain'] = forecast['rain']
+            # Set boolean flag for snow
+            if forecast['snow'] > 0:
+                values['Snow'] = 1
+            else:
+                values['Snow'] = 0
+            
+
             return values
     
     def update_data_values(self, form, timestamp):

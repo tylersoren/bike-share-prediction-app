@@ -47,6 +47,11 @@ class Weather:
         forecast['rain'] = self.__mm_to_inch(response['rain'])
       except KeyError:
         forecast['rain'] = 0.0
+      
+      try:
+        forecast['snow'] = self.__mm_to_inch(response['snow'])
+      except KeyError:
+        forecast['snow'] = 0.0
 
 
       return forecast
