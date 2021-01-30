@@ -9,8 +9,8 @@ logger = logging.getLogger('bike-share-predict')
 
 class Weather:
 
-  # Set default location to Washington Dulles Internation airport
-  def __init__(self, api_key, lat = "38.93", lon = "-77.45"):
+  # Set default location to Washington Reagan airport
+  def __init__(self, api_key, lat = "38.85", lon = "-77.03"):
       
       self.api_key = api_key
       # Set URL to onecall API that can return different weather sets
