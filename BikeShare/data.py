@@ -35,8 +35,6 @@ class BikeData:
       return self.data_df[self.display_columns].loc[start:end]
 
   def get_time(self, type):
-      if type == 'week':
-        return self.data_df.tail(7*24)
       if type == 'year':
         # Copy data and extract the date portion of the time as a new field
         year_df = self.data_df.copy()
@@ -44,16 +42,49 @@ class BikeData:
         
         # Create grouping by Date and total # of rides
         year_df = year_df.groupby(['Date'], as_index = False)['Ride count'].sum()
-        year_df.rename(columns={'Date': 'Timestamp'}, inplace=True)
+        # Calculate 7-day rolling average
+        year_df['Rolling avg'] = year_df.iloc[:,1].rolling(window=7).mean()
         # Return last 365 days worth of data
         return year_df.tail(365)
-      return 1
+      elif type == 'monthly':
+        # Return previous year's data
+        year = self.data_df['Year'].max()
+        return self.data_df.loc[self.data_df['Year'] == year]
+      # Default to week
+      else:
+        # Return 7 days worth of hourly data
+        return self.data_df.tail(7*24)
 
   def get_weather(self, type):
       if type == 'temp':
-        return self.data_df.groupby(['Average temp'], as_index = False)['Ride count'].mean()
-      if type == 'wind':
+        return self.data_df.groupby(['Average temp'], as_index = False)['Ride count'].sum()
+      elif type == 'wind':
         return self.data_df.groupby(['Wind'], as_index = False)['Ride count'].mean()
+      elif type == 'rolling_temp':
+        temp_df = self.data_df.copy()
+        temp_df['Date'] = temp_df['Timestamp'].dt.date
+        # Create grouping by date and average temp
+        temp_df = temp_df.groupby(['Date', 'Average temp'], as_index = False).count()
+        # Calculate 7-day rolling average
+        temp_df['Rolling avg'] = temp_df.iloc[:,1].rolling(window=7).mean()
+        return temp_df.tail(365)
+      elif type == 'rolling_wind':
+        wind_df = self.data_df.copy()
+        wind_df['Date'] = wind_df['Timestamp'].dt.date
+        # Create grouping by date and wind speed
+        wind_df = wind_df.groupby(['Date', 'Wind'], as_index = False).count()
+        # Calculate 3-day rolling average
+        wind_df['Rolling avg'] = wind_df.iloc[:,1].rolling(window=3).mean()
+        return wind_df.tail(365)
+      elif type == 'rain':
+        # previous year's data and group by Date
+        year = self.data_df['Year'].max()
+        rain_df = self.data_df.loc[self.data_df['Year'] == year]
+        rain_df['Date'] = rain_df['Timestamp'].dt.date
+        rain_df = rain_df.groupby(['Date', 'Rain', 'Month'], as_index = False).count()
+        # Get Sum of rainfall by month
+        rain_df = rain_df.groupby(['Month'], as_index = False)['Rain'].sum()
+        return rain_df
 
   def update(self, timestamp, updated_values):
       self.data_df.loc[self.data_df['Timestamp'] == timestamp, self.data_columns] = updated_values.values

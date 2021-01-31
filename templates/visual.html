@@ -5,23 +5,54 @@
 
 <h1>Data Visualization</h1>
 <div>
-  <button {% if  selected ==  'week' %} class="selected" {% endif %}
-    onclick="window.location.href='/visuals?type=week';">
+  <button {% if  type ==  'rides' %} class="selected" {% endif %}
+    onclick="window.location.href='/visuals?type=rides';">
+    Ride Count
+  </button>
+  <button {% if  type ==  'weather' %} class="selected" {% endif %}
+    onclick="window.location.href='/visuals?type=weather';">
+    Weather
+  </button>
+</div>
+</br>
+</br>
+<div>
+  {% if type == 'rides'%}
+  <button {% if  subtype ==  'week' %} class="selected" {% endif %}
+    onclick="window.location.href='/visuals?type=rides&subtype=week';">
     Past Week
   </button>
-  <button {% if  selected ==  'year' %} class="selected" {% endif %}
-    onclick="window.location.href='/visuals?type=year';">
+  <button {% if  subtype ==  'year' %} class="selected" {% endif %}
+    onclick="window.location.href='/visuals?type=rides&subtype=year';">
     Past Year
   </button>
-  <button {% if  selected ==  'temp' %} class="selected" {% endif %}
-    onclick="window.location.href='/visuals?type=temp';">
+  <button {% if  subtype ==  'monthly' %} class="selected" {% endif %}
+    onclick="window.location.href='/visuals?type=rides&subtype=monthly';">
+    Monthly
+  </button>
+  <button {% if  subtype ==  'temp' %} class="selected" {% endif %}
+    onclick="window.location.href='/visuals?type=rides&subtype=temp';">
     By Temperature
   </button>
-  <button {% if  selected ==  'wind' %} class="selected" {% endif %}
-    onclick="window.location.href='/visuals?type=wind';">
+  <button {% if  subtype ==  'wind' %} class="selected" {% endif %}
+    onclick="window.location.href='/visuals?type=rides&subtype=wind';">
     By Wind Speed
   </button>
-
+  {% endif %}
+  {% if type == 'weather' %}
+  <button {% if  subtype ==  'temp' %} class="selected" {% endif %}
+    onclick="window.location.href='/visuals?type=weather&subtype=temp';">
+    Temperature
+  </button>
+  <button {% if  subtype ==  'wind' %} class="selected" {% endif %}
+    onclick="window.location.href='/visuals?type=weather&subtype=wind';">
+    Wind Speed
+  </button>
+  <button {% if  subtype ==  'rain' %} class="selected" {% endif %}
+    onclick="window.location.href='/visuals?type=weather&subtype=rain';">
+    Rain
+  </button>
+  {% endif %}
 </div>
 <div class="flex-container">
 

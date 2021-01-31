@@ -107,11 +107,12 @@ def data_page():
 @app.route('/visuals', methods=['GET'])
 def visuals():
 
-    selected, img_url = service.create_data_plot(request)
+    selected, subtype, img_url = service.create_data_plot(request)
 
     return render_template('visual.html',
                     img_url = img_url,
-                    selected = selected)
+                    type = selected,
+                    subtype = subtype)
 
 
 # Start the application

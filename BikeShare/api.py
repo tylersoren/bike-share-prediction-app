@@ -205,51 +205,105 @@ class BikeShareApi():
 
         return self.__create_plot(hours, predictions, title, xlabel, ylabel, xticks, destination_type)
 
-    def create_data_plot(self, request, destination_type = 'azure'):
+    def create_data_plot(self, request):
+        # Retrieve selected plot subtype and type 
         data_type = request.args.get('type')
-        if data_type is None or data_type not in ['year', 'week', 'temp', 'wind']:
-            data_type = 'week'
-
+        data_subtype = request.args.get('subtype')
+        # error handling if incorrect input was entered
+        if data_type is None or data_type not in ['rides', 'weather']:
+            data_type = 'rides'
+        
         plot_type = "line"
-        data_type = data_type.lower()
-        if data_type in ['year', 'week']:
-            plot_data = self.data.get_time(data_type)
-            x = plot_data['Timestamp']
-            y = plot_data['Ride count']
-            xlabel = 'Date'
-            ylabel = 'Ride Count'
-            xticks = None
-            if data_type == 'year':
-                title = 'Ride Count per Day for Past Year'
-            else:
-                title = 'Ride Count per Hour for Past Week'
-        else:
-            plot_data = self.data.get_weather(data_type)
-            ylabel = 'Hourly Ride Count'
-            if data_type == 'temp':
-                x = plot_data['Average temp']
+        xticks = None
+        # Handling for the Ride count type plots
+        if data_type == 'rides':
+            # error handling, set to default
+            if data_subtype is None or data_subtype not in ['year', 'week', 'monthly', 'temp', 'wind']:
+                data_subtype = 'week'
+            # Get time based parameters
+            if data_subtype in ['year', 'week', 'monthly']:
+                plot_data = self.data.get_time(data_subtype)
                 y = plot_data['Ride count']
-                title = 'Average Hourly Ride Count by Daily Average Temp'
-                xlabel = 'Temp (F)'
-                xticks = np.arange(plot_data['Average temp'].min(), plot_data['Average temp'].max(), 3.0)
-
+                xlabel = 'Date'
+                ylabel = 'Ride Count'
+                if data_subtype == 'year':
+                    title = 'Ride Count 7-day rolling average for Past Year'
+                    x = plot_data['Date']
+                    y = plot_data['Rolling avg']
+                elif data_subtype == "monthly":
+                    title = 'Distribution of hourly rides by month'
+                    x = plot_data['Month']
+                    xlabel = 'Month'
+                    xticks = plot_data['Month'].unique()
+                    xticks.sort()
+                    plot_type = 'box'
+                else:
+                    title = 'Ride Count per Hour for Past Week'
+                    x = plot_data['Timestamp']
+        
             else:
-                x = plot_data['Wind']
-                y = plot_data['Ride count']
-                title = 'Average Hourly Ride Count by Daily Average Wind Speed'
-                xlabel = 'Wind Speed (MPH)'
-                xticks = np.arange(round(plot_data['Wind'].min()), round(plot_data['Wind'].max())+1, 2.0)
+                # Get weather based parameters
+                plot_data = self.data.get_weather(data_subtype)
+                ylabel = 'Ride Count'
+                if data_subtype == 'temp':
+                    plot_type = 'area'
+                    x = plot_data['Average temp']
+                    y = plot_data['Ride count']
+                    title = 'Distribution of total rides over daily average temperatures'
+                    xlabel = 'Temp (F)'
+                    xticks = np.arange(plot_data['Average temp'].min(), plot_data['Average temp'].max(), 3.0)
+                else:
+                    x = plot_data['Wind']
+                    y = plot_data['Ride count']
+                    title = 'Average Hourly Ride Count by Daily Average Wind Speed'
+                    xlabel = 'Wind Speed (MPH)'
+                    xticks = np.arange(round(plot_data['Wind'].min()), round(plot_data['Wind'].max())+1, 2.0)
+        # Data type is weather
+        elif data_type == 'weather':
+            # error handling, set to default
+            if data_subtype is None or data_subtype not in ['temp', 'wind', 'rain']:
+                data_subtype = 'temp'
+            if data_subtype == 'wind':
+                subtype = 'rolling_wind'
+                ylabel = 'Average Wind Speed (MPH)'
+                title = 'Wind Speed 3-day rolling average for Past Year'
+            elif data_subtype == 'rain':
+                plot_type = 'bar'
+                subtype = 'rain'
+                ylabel = 'Rain (inches)'
+                title = 'Total Rainfall by Month'
+            else:
+                subtype = 'rolling_temp'
+                ylabel = 'Average Temp (F)'
+                title = 'Temperature 7-day rolling average for Past Year'
+                
+            plot_data = self.data.get_weather(subtype)
+            if subtype == 'rain':
+                y = plot_data['Rain']
+                x = plot_data['Month']
+                xlabel = 'Month'
+            else:
+                y = plot_data['Rolling avg']
+                x = plot_data['Date']
+                xlabel = 'Date'
 
-        return data_type, self.__create_plot(x, y, title, xlabel, ylabel, xticks, plot_type, destination_type)
 
-    def __create_plot(self, x, y, title, xlabel, ylabel, xticks, plot_type = 'line', destination_type = 'azure'):
+        return data_type, data_subtype, self.__create_plot(x, y, title, xlabel, ylabel, xticks, plot_type)
+
+    def __create_plot(self, x, y, title, xlabel, ylabel, xticks, plot_type = 'line'):
 
         filename = str(uuid.uuid4()) + ".png"
         temp_path = os.path.join(temp_dir, filename)
 
         fig, ax = plt.subplots(figsize = ( 8 , 5 )) 
+
         sns.set_style("whitegrid")
-        if plot_type == 'bar':
+        if plot_type == 'box':
+            sns.boxplot(x=x, y=y)
+        elif plot_type == 'area':
+            sns.lineplot(x=x, y=y)
+            plt.fill_between(x.values, y.values)
+        elif plot_type == 'bar':
             sns.barplot(x=x, y=y)
         else:
             sns.lineplot(x=x, y=y)
@@ -257,16 +311,22 @@ class BikeShareApi():
         plt.title(title)
         plt.xlabel(xlabel)
         plt.ylabel(ylabel)
-        plt.xlim(min(x), max(x))
 
         if xlabel == 'Date':
             # Use date formatting to conform to the timescale of the given data
             locator = mdates.AutoDateLocator(minticks=4, maxticks=14)
             ax.xaxis.set_major_locator(locator)
             ax.xaxis.set_major_formatter(mdates.ConciseDateFormatter(locator))
-        else:
+            plt.xlim(min(x), max(x))
+        elif plot_type == 'area':
+            plt.xlim(0, 90)
+        elif plot_type == 'line':
             plt.xticks(xticks)
-
+            plt.xlim(min(x) - 1, max(x) + 1)
+        
+        plt.title(title)
+        plt.xlabel(xlabel)
+        plt.ylabel(ylabel)
         plt.xticks(rotation=45)
         plt.savefig(temp_path, format='png')
         plt.close()
