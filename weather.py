@@ -1,4 +1,4 @@
-# Weather class for retrieving weather forecast information from OpenWeather API
+# Weather class for retrieving weather forecast information from OpenWeatherMap API
 # https://openweathermap.org/api/one-call-api
 # Created by Tyler Sorensen
 
@@ -7,6 +7,7 @@ import logging
 
 logger = logging.getLogger('bike-share-predict')
 
+# Class for interacting with OpenWeatherMap API
 class Weather:
 
   # Set default location to Washington Reagan airport
@@ -43,16 +44,17 @@ class Weather:
       forecast['temp_max'] = round(response['temp']['min'], 1)
       forecast['temp_min'] = round(response['temp']['max'], 1)
       forecast['wind_speed'] = round(response['wind_speed'], 1)
+      
+      # These values aren't always returned. Set to 0 if not found
       try:
         forecast['rain'] = self.__mm_to_inch(response['rain'])
       except KeyError:
         forecast['rain'] = 0.0
-      
+
       try:
         forecast['snow'] = self.__mm_to_inch(response['snow'])
       except KeyError:
         forecast['snow'] = 0.0
-
 
       return forecast
 

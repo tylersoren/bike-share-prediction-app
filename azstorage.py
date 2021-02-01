@@ -9,11 +9,11 @@ import logging
 logger = logging.getLogger('bike-share-predict')
 
 
-
 # Class for storing a connection to an Azure storage account and container
 # Provides methods for uploading, downloading, and deleting blobs
 class AzureStorage:
 
+    # Initialize the Azure Storage client
     def __init__(self, storage_url, container_name):
         
         self.account_url = storage_url
@@ -104,7 +104,6 @@ class AzureStorage:
         except Exception as e:
             logger.error(e)
             return None
-
 
         return out_file
 

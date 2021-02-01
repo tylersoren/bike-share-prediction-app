@@ -155,13 +155,15 @@ class BikeShareApi():
 
             return values
     
+    # Update dataframe with submitted values
     def update_data_values(self, form, timestamp):
         rides = int(form['Ride count'])
         wind = float(form['Wind'])
         precip = float(form['Rain'])
+        snow = float(form['Snow'])
         hitemp = float(form['Hi temp'])
         lotemp = float(form['Lo temp'])
-        data= [[rides, wind, precip, hitemp, lotemp]]
+        data= [[rides, wind, precip, snow, hitemp, lotemp]]
         
         updated_values = pd.DataFrame(
             data, columns = self.data.data_columns
@@ -169,12 +171,15 @@ class BikeShareApi():
 
         self.data.update(timestamp, updated_values)
     
+    # Save dataframe object to a CSV file in the configured storage location
     def save_data_values(self):
-        # Export data to temp csv and save to proper location
+        # Export data to temp csv and save to temp file
         time_format='%Y-%m-%dT%H.%M.%S'
         timestamp = dt.datetime.now().strftime(time_format)
         temp_file = f"updated-ride-data-{timestamp}.csv"
         temp_path = os.path.join(temp_dir, temp_file)
+
+        logger.info(f"Saving updated data as file {temp_file}")
         self.data.to_csv(temp_path)
         if self.storage_type == 'azure':
             file_loc = self.data_storage.upload_blob(temp_path)
@@ -184,10 +189,12 @@ class BikeShareApi():
             file_loc = temp_path 
 
         return file_loc
-
+    
+    # Return dataframe for selected page
     def get_data(self, page):
         return self.data.get(page)
 
+    # Get predictions from ML model
     def get_predictions(self, values):
         # run predictions and round to nearest integer and clip any negative numbers to 0
         predictions = np.rint(self.model.predict(values).clip(min=0)).astype(int).flatten()
@@ -197,14 +204,16 @@ class BikeShareApi():
         
         return results, predictions
 
-    def create_prediction_plot(self, hours, predictions, destination_type = 'azure'):
+    # Generate plot image for ride count predictions
+    def create_prediction_plot(self, hours, predictions):
         title = 'Predicted Ride Count per Hour'
         xlabel = 'Hour'
         ylabel = 'Ride Count'
         xticks =  np.arange(0, 23, 4)
 
-        return self.__create_plot(hours, predictions, title, xlabel, ylabel, xticks, destination_type)
+        return self.__create_plot(hours, predictions, title, xlabel, ylabel, xticks)
 
+    # Generate plot image for data visualizations
     def create_data_plot(self, request):
         # Retrieve selected plot subtype and type 
         data_type = request.args.get('type')
@@ -217,7 +226,7 @@ class BikeShareApi():
         xticks = None
         # Handling for the Ride count type plots
         if data_type == 'rides':
-            # error handling, set to default
+            # error handling, set to default of week
             if data_subtype is None or data_subtype not in ['year', 'week', 'monthly', 'temp', 'wind']:
                 data_subtype = 'week'
             # Get time based parameters
@@ -260,7 +269,7 @@ class BikeShareApi():
                     xticks = np.arange(round(plot_data['Wind'].min()), round(plot_data['Wind'].max())+1, 2.0)
         # Data type is weather
         elif data_type == 'weather':
-            # error handling, set to default
+            # error handling, set to default of temp
             if data_subtype is None or data_subtype not in ['temp', 'wind', 'rain']:
                 data_subtype = 'temp'
             if data_subtype == 'wind':
@@ -287,9 +296,11 @@ class BikeShareApi():
                 x = plot_data['Date']
                 xlabel = 'Date'
 
+        logger.info(f"Creating plot for type: {data_type} and subtype: {data_subtype}")
 
         return data_type, data_subtype, self.__create_plot(x, y, title, xlabel, ylabel, xticks, plot_type)
 
+    # Handle image generation for plot creation
     def __create_plot(self, x, y, title, xlabel, ylabel, xticks, plot_type = 'line'):
 
         filename = str(uuid.uuid4()) + ".png"
@@ -297,6 +308,7 @@ class BikeShareApi():
 
         fig, ax = plt.subplots(figsize = ( 8 , 5 )) 
 
+        # Create plot of selected type
         sns.set_style("whitegrid")
         if plot_type == 'box':
             sns.boxplot(x=x, y=y)
@@ -308,10 +320,10 @@ class BikeShareApi():
         else:
             sns.lineplot(x=x, y=y)
 
+        # Set plot display parameters
         plt.title(title)
         plt.xlabel(xlabel)
         plt.ylabel(ylabel)
-
         if xlabel == 'Date':
             # Use date formatting to conform to the timescale of the given data
             locator = mdates.AutoDateLocator(minticks=4, maxticks=14)
