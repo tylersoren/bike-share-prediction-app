@@ -317,7 +317,7 @@ class BikeShareApi():
         filename = str(uuid.uuid4()) + ".png"
         temp_path = os.path.join(temp_dir, filename)
 
-        fig, ax = plt.subplots(figsize = ( 8 , 5 )) 
+        fig, ax = plt.subplots(figsize = ( 8 , 5.5 )) 
 
         # Create plot of selected type
         sns.set_style("whitegrid")
