@@ -62,9 +62,8 @@ class BikeShareApi():
         
         # check if date is a holiday
         holiday = float(is_holiday(date))
+        month = date.month
 
-
-        lotemp = float(form['lotemp'])
         hitemp = float(form['hitemp'])
         wind = float(form['wind'])
         precip = float(form['precip'])
@@ -72,17 +71,20 @@ class BikeShareApi():
         if float(form['snow']) > 0:
             snow = 1
         else:
-            snow = 0
-        month = date.month
-        day = date.weekday()
+            snow = 0 
+        
+        # set boolean for weekend    
+        if date.weekday() > 4:
+            weekend = 1
+        else:
+            weekend = 0
         hours = np.arange(0,24,1)        
-
 
         values = pd.DataFrame()
         values['Hour'] = hours
         values['Hi temp'] = hitemp
-        values['Lo temp'] = lotemp
-        values['Day of week'] = day
+        values['Weekend'] = weekend
+        values['Year'] = date.year
         values['Month'] = month
 
         # Set season one-hot variables
@@ -120,15 +122,20 @@ class BikeShareApi():
             
             # check if date is a holiday
             holiday = float(is_holiday(date))
-
             month = date.month
-            day = date.weekday()
+
+            # set boolean for weekend    
+            if date.weekday() > 4:
+                weekend = 1
+            else:
+                weekend = 0
+
             hours = np.arange(0,24,1)        
             values = pd.DataFrame()
             values['Hour'] = hours
             values['Hi temp'] = forecast['temp_max']
-            values['Lo temp'] = forecast['temp_min']
-            values['Day of week'] = day
+            values['Weekend'] = weekend
+            values['Year'] = date.year
             values['Month'] = month
             # Set season one-hot variables
             seasons = ['Fall','Spring','Summer','Winter']
@@ -227,16 +234,20 @@ class BikeShareApi():
         # Handling for the Ride count type plots
         if data_type == 'rides':
             # error handling, set to default of week
-            if data_subtype is None or data_subtype not in ['year', 'week', 'monthly', 'temp', 'wind']:
+            if data_subtype is None or data_subtype not in ['year', 'week', 'alltime', 'monthly', 'temp', 'wind']:
                 data_subtype = 'week'
             # Get time based parameters
-            if data_subtype in ['year', 'week', 'monthly']:
+            if data_subtype in ['year', 'week', 'alltime', 'monthly']:
                 plot_data = self.data.get_time(data_subtype)
                 y = plot_data['Ride count']
                 xlabel = 'Date'
                 ylabel = 'Ride Count'
                 if data_subtype == 'year':
                     title = 'Ride Count 7-day rolling average for Past Year'
+                    x = plot_data['Date']
+                    y = plot_data['Rolling avg']
+                elif data_subtype == 'alltime':
+                    title = 'Ride Count 7-day rolling average for all time'
                     x = plot_data['Date']
                     y = plot_data['Rolling avg']
                 elif data_subtype == "monthly":

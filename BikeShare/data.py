@@ -38,8 +38,8 @@ class BikeData:
       return self.data_df[self.display_columns].loc[start:end]
 
   def get_time(self, type):
-      # Return 7-day rolling average of ride count over previous year
-      if type == 'year':
+      # Return 7-day rolling average of ride count over previous year or all time
+      if type == 'year' or type == 'alltime':
         # Copy data and extract the date portion of the time as a new field
         year_df = self.data_df.copy()
         year_df['Date'] = year_df['Timestamp'].dt.date
@@ -48,8 +48,12 @@ class BikeData:
         year_df = year_df.groupby(['Date'], as_index = False)['Ride count'].sum()
         # Calculate 7-day rolling average
         year_df['Rolling avg'] = year_df.iloc[:,1].rolling(window=7).mean()
-        # Return last 365 days worth of data
-        return year_df.tail(365)
+        if type == 'year':  
+            # Return last 365 days worth of data
+            return year_df.tail(365)
+        else:
+            return year_df
+
       # Return year's worth of data for monthly reporting
       elif type == 'monthly':
         # Return previous year's data

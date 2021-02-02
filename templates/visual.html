@@ -26,9 +26,13 @@
     onclick="window.location.href='/visuals?type=rides&subtype=year';">
     Past Year
   </button>
+  <button {% if  subtype ==  'alltime' %} class="selected" {% endif %}
+    onclick="window.location.href='/visuals?type=rides&subtype=alltime';">
+    All Time
+  </button>
   <button {% if  subtype ==  'monthly' %} class="selected" {% endif %}
     onclick="window.location.href='/visuals?type=rides&subtype=monthly';">
-    Monthly
+    Monthly Distribution
   </button>
   <button {% if  subtype ==  'temp' %} class="selected" {% endif %}
     onclick="window.location.href='/visuals?type=rides&subtype=temp';">
